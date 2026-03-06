@@ -6,6 +6,7 @@
 
 - [用 Cursor + Opus 生成专业 PPT](docs/generate-ppt-with-opus.md)
 - [用 Cursor + Opus 自动发送邮件](docs/send-email-with-opus.md)
+- [用 Cursor + Opus 阅读论文并生成讲解 PPT](docs/read-paper-generate-ppt.md)
 
 ## 工具环境
 
@@ -18,6 +19,7 @@
 ## 生成的文件示例
 
 - [`AI_Pipeline_Proposal.pptx`](files/AI_Pipeline_Proposal.pptx) — 由 AI 生成的完整 PPT 方案
+- [`RoboPocket_Paper_Presentation.pptx`](files/RoboPocket_Paper_Presentation.pptx) — 由 AI 阅读论文后生成的带原图讲解 PPT
 
 ## License
 
