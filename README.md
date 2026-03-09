@@ -9,6 +9,8 @@
 - [用 Cursor + Opus 阅读论文并生成讲解 PPT](docs/read-paper-generate-ppt.md)
 - [用 Cursor + Opus 集成飞书 MCP 实现文档自动化](docs/feishu-mcp-integration.md)
 - [用 Cursor 在 Windows 上部署 OpenClaw 并连接飞书](docs/openclaw-feishu-setup.md)
+- [使用 OpenClaw + Python 发送带附件邮件](docs/email-attachment-sending.md)
+- [Cursor 使用指南](docs/cursor-usage-guide.md)
 
 ## 工具环境
 
