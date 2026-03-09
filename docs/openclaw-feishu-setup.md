@@ -1,6 +1,6 @@
 # 用 Cursor 在 Windows 上部署 OpenClaw 并连接飞书
 
-在 Windows Server 上通过 Cursor AI 助手完成 OpenClaw 安装、配置 Kimi K2.5 Code 模型，并连接飞书机器人实现 AI 对话。
+在 Windows Server 上通过 Cursor AI 助手完成 OpenClaw 安装、配置 Kimi K2.5 模型，并连接飞书机器人实现 AI 对话。
 
 ## 环境要求
 
@@ -51,47 +51,58 @@ git config --global url."https://github.com/".insteadOf "git@github.com:"
 npm install -g openclaw@latest --ignore-scripts
 ```
 
-## 二、配置 Kimi K2.5 Code 模型
+## 二、配置 Kimi K2.5 模型
+
+Kimi 有两个版本可选：
+
+| 版本 | API 来源 | 工具调用（exec） | 适用场景 |
+|------|---------|-----------------|---------|
+| **Kimi K2.5 标准版（推荐）** | [Moonshot 平台](https://platform.moonshot.cn) | 支持 | 聊天 + 工具执行 + 发邮件等 |
+| Kimi K2.5 Code | [Kimi Code 控制台](https://www.kimi.com/code/console) | 不支持 | 仅聊天问答 |
+
+> **重要：建议使用标准版 K2.5。** Kimi Code 版使用 Anthropic Messages 协议，在 OpenClaw 中无法正确调用 exec 等工具（模型会输出工具调用语法的文本，但不会真正执行）。标准版走 OpenAI 兼容协议，通过 Gateway 可正确执行工具调用。
 
 ### 1. 获取 API Key
 
-前往 [Kimi Code 控制台](https://www.kimi.com/code/console) 注册并获取 API Key。
+前往 [Moonshot 平台](https://platform.moonshot.cn/console/api-keys) 注册并获取 API Key（`sk-` 开头）。
 
-### 2. 运行首次配置向导
+> 注意：Moonshot API Key 和 Kimi Code API Key **不通用**，需要分别注册。
+
+### 2. 配置方式
+
+#### 方式 A：交互式向导
 
 ```powershell
 openclaw onboard
 ```
 
-在交互式向导中：
-- Gateway 运行位置选择 **Local**
-- 认证方式选择 **kimi-code-api-key**
-- 输入你的 Kimi API Key
+在向导中选择 **moonshot-api-key**，输入你的 Moonshot API Key。
 
-### 3. 确认配置文件
+#### 方式 B：手动编辑配置文件
 
-配置文件位于 `~\.openclaw\openclaw.json`，核心内容如下：
+编辑 `~\.openclaw\openclaw.json`：
 
 ```json
 {
   "models": {
     "providers": {
-      "kimi-coding": {
-        "baseUrl": "https://api.kimi.com/coding/",
-        "api": "anthropic-messages",
+      "moonshot": {
+        "baseUrl": "https://api.moonshot.cn/v1",
+        "apiKey": "<你的 Moonshot API Key>",
+        "api": "openai-completions",
         "models": [{
-          "id": "k2p5",
-          "name": "Kimi for Coding",
-          "reasoning": true,
+          "id": "kimi-k2.5",
+          "name": "Kimi K2.5",
+          "reasoning": false,
           "contextWindow": 262144,
-          "maxTokens": 32768
+          "maxTokens": 8192
         }]
       }
     }
   },
   "agents": {
     "defaults": {
-      "model": { "primary": "kimi-coding/k2p5" }
+      "model": { "primary": "moonshot/kimi-k2.5" }
     }
   }
 }
@@ -191,6 +202,7 @@ npm install @larksuiteoapi/node-sdk --prefix "$env:APPDATA\npm\node_modules\open
     "feishu": {
       "enabled": true,
       "dmPolicy": "pairing",
+      "streaming": "off",
       "accounts": {
         "main": {
           "appId": "<你的飞书 App ID>",
@@ -202,6 +214,12 @@ npm install @larksuiteoapi/node-sdk --prefix "$env:APPDATA\npm\node_modules\open
   }
 }
 ```
+
+> **streaming 配置说明：** 建议飞书频道设为 `"off"`，等完整回复生成后一次性发送，避免流式输出的兼容问题。可选值：
+> - `"off"` — 关闭流式，一次性发送完整回复（推荐）
+> - `"partial"` — 部分流式，边生成边发送
+> - `"block"` — 分块发送
+> - `"progress"` — 带进度指示的流式
 
 ### 8. 重启 Gateway
 
@@ -241,12 +259,12 @@ openclaw pairing approve feishu <配对码>
 | 项目 | 状态 |
 |------|------|
 | OpenClaw | v2026.3.7 |
-| AI 模型 | Kimi K2.5 Code（免费） |
+| AI 模型 | Kimi K2.5 标准版（Moonshot API） |
 | 搜索引擎 | Kimi（免费） |
-| 飞书频道 | WebSocket 长连接 |
+| 飞书频道 | WebSocket 长连接，streaming: off |
 | Dashboard | http://127.0.0.1:18789 |
 
-在飞书中与机器人对话，即可享受 AI 编程助手的能力：代码生成、问题解答、文档搜索等。
+在飞书中与机器人对话，即可享受 AI 助手的能力：代码生成、问题解答、文档搜索、发送邮件、执行命令等。
 
 ## 六、常见问题
 
@@ -268,12 +286,18 @@ git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
 ### Q: Gateway 关闭后飞书断连？
 Gateway 需要持续运行。如需后台常驻，可考虑注册为 Windows 服务或使用 `nssm` 工具。
 
+### Q: Kimi Code 版和标准版有什么区别？
+Kimi Code（`api.kimi.com/coding`）使用 Anthropic Messages 协议，在 OpenClaw 中不支持工具调用（exec、write 等）。标准版 K2.5（`api.moonshot.cn/v1`）使用 OpenAI 兼容协议，通过 Gateway 可正确执行工具调用。**建议使用标准版。**
+
+### Q: 飞书消息显示异常或格式错乱？
+将飞书频道的 `streaming` 设为 `"off"`，可避免流式输出的兼容问题。
+
 ## 工具版本
 
 | 工具 | 版本 |
 |------|------|
 | Cursor | AI 代码编辑器 |
 | OpenClaw | 2026.3.7 |
-| Kimi K2.5 Code | k2p5 |
+| Kimi K2.5 | 标准版（Moonshot API） |
 | Node.js | v24.14.0 |
 | 飞书 SDK | @larksuiteoapi/node-sdk |
