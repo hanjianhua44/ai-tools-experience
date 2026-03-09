@@ -1,10 +1,10 @@
-# 用 Cursor + Opus 自动发送邮件
+# 用 AI 工具自动发送邮件
 
 ## 背景
 
-在 Cursor 中完成了文件生成后，经常需要把结果发给同事或自己。与其手动打开邮箱、写正文、添附件，不如让 AI 直接帮你发出去。
+在 Cursor / OpenClaw 中完成了文件生成后，经常需要把结果发给同事或自己。与其手动打开邮箱、写正文、添附件，不如让 AI 直接帮你发出去。
 
-通过 Cursor + Claude Opus，可以用 Python SMTP 脚本一键发送带附件的邮件。
+通过 Cursor + Claude Opus 或 OpenClaw，可以用 Python SMTP 脚本一键发送带附件的邮件。
 
 ## 前置准备
 
@@ -147,15 +147,53 @@ for filepath in ["report.pptx", "data.xlsx", "summary.pdf"]:
         msg.attach(part)
 ```
 
+## 踩坑记录（OpenClaw 实测）
+
+在 OpenClaw 中尝试发送带附件邮件时，依次踩了以下坑，最终确认 **Python smtplib 是最可靠的方案**。
+
+### curl 发送邮件附件失败
+
+- **现象**：curl 命令发送邮件时，服务器连接中断（`schannel: server closed abruptly`）
+- **原因**：163 SMTP 服务器对 curl 的大文件上传支持不稳定，容易超时或中断
+- **尝试**：多次重试、调整超时时间、使用不同 boundary 格式均失败
+- **结论**：curl 适合发简单纯文本邮件，带附件（尤其是图片/大文件）不推荐
+
+### PowerShell .NET Mail 发送失败
+
+- **现象**：`System.Net.Mail` 程序集加载失败，SMTP 连接异常
+- **原因**：
+  - PowerShell 5.1 中 `System.Net.Mail` 不是独立可加载的程序集
+  - 163 邮箱需要 SSL/TLS 特殊配置
+  - 端口 465（SSL）和 587（STARTTLS）行为不一致
+- **结论**：Windows Server 上用 PowerShell 发邮件坑多，不如直接用 Python
+
+### 工具选择优先级
+
+| 方式 | 推荐度 | 说明 |
+|------|--------|------|
+| Python smtplib | ✅ 推荐 | 最稳定，支持复杂邮件格式，零额外依赖 |
+| curl | ⚠️ 慎用 | 适合简单邮件，大附件容易失败 |
+| PowerShell .NET | ❌ 不推荐 | 需要 .NET 支持，在 Server 环境配置复杂 |
+
+### 附件发送要点
+
+1. **使用 MIMEMultipart**：支持多部分邮件（正文 + 附件）
+2. **正确编码附件**：使用 base64 编码二进制文件
+3. **设置 Content-Disposition**：`attachment; filename="xxx"`
+4. **文件路径**：使用绝对路径或 `os.path.expanduser()` 展开用户目录
+5. **中文附件名**：建议使用英文文件名避免编码问题
+
 ## 安全提醒
 
 - **授权码**不要硬编码在公开仓库的代码中，建议使用环境变量
 - SMTP 授权码和登录密码是两回事，授权码仅用于第三方客户端登录
 - 如果不再使用，记得在邮箱设置中关闭 SMTP 或重置授权码
+- 附件大小受限于邮箱服务商限制（通常 25MB–50MB）
 
 ## 小结
 
-- **全程自动化**：从文件生成到邮件发送，无需离开 Cursor
+- **全程自动化**：从文件生成到邮件发送，无需离开 Cursor / OpenClaw
 - **零依赖**：Python 标准库自带 `smtplib`，不需要额外安装
 - **可复用**：配置好一次后，后续发送只需一句话
 - **适用场景**：发送报告、PPT、数据文件给同事，日常工作流自动化
+- **跨工具通用**：Cursor 和 OpenClaw 都可以用同样的 Python 方案
