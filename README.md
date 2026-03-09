@@ -8,6 +8,7 @@
 - [用 Cursor + Opus 自动发送邮件](docs/send-email-with-opus.md)
 - [用 Cursor + Opus 阅读论文并生成讲解 PPT](docs/read-paper-generate-ppt.md)
 - [用 Cursor + Opus 集成飞书 MCP 实现文档自动化](docs/feishu-mcp-integration.md)
+- [用 Cursor 在 Windows 上部署 OpenClaw 并连接飞书](docs/openclaw-feishu-setup.md)
 
 ## 工具环境
 
@@ -15,6 +16,7 @@
 |------|------|
 | [Cursor](https://cursor.sh/) | AI 驱动的代码编辑器 |
 | Claude Opus | Anthropic 的大语言模型，作为 Cursor 的后端 AI |
+| [OpenClaw](https://github.com/openclaw/openclaw) | 开源 AI Agent，支持多平台聊天集成 |
 | Python | 脚本执行环境 |
 | [@larksuiteoapi/lark-mcp](https://github.com/larksuite/lark-openapi-mcp) | 飞书官方 MCP Server，支持文档读写、消息发送等 |
 
