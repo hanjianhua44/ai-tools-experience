@@ -38,7 +38,7 @@
 
 将学术论文 PDF 提供给 Cursor，AI 自动解析全文内容，提取关键图表，生成结构化的讲解 PPT，**端到端耗时约 5 分钟**。
 
-> 🎬 **（现场演示）** ｜ 📖 详细参考：[用 Cursor + Opus 阅读论文并生成讲解 PPT](read-paper-generate-ppt.md)
+> 🎬 **（现场演示）** ｜ 📖 详细参考：[用 Cursor + Opus 阅读论文并生成讲解 PPT](https://github.com/hanjianhua44/ai-tools-experience/blob/main/docs/read-paper-generate-ppt.md)
 
 ---
 
@@ -110,7 +110,7 @@ Cursor 不仅是代码编辑器 —— 通过 **Rules（规则配置）** 和 **
 >
 > → AI 自动通过 MCP 调用飞书 API，生成文档并返回链接
 
-📖 详细配置：[用 Cursor + Opus 集成飞书 MCP 实现文档自动化](feishu-mcp-integration.md)
+📖 详细配置：[用 Cursor + Opus 集成飞书 MCP 实现文档自动化](https://github.com/hanjianhua44/ai-tools-experience/blob/main/docs/feishu-mcp-integration.md)
 
 ### 📧 集成二：邮件（Email）
 
@@ -125,7 +125,7 @@ Cursor 不仅是代码编辑器 —— 通过 **Rules（规则配置）** 和 **
 >
 > → AI 自动读取配置、生成脚本、编码附件、发送邮件，全程无需手动操作
 
-📖 详细配置：[用 Cursor + Opus 自动发送邮件](send-email-with-opus.md)
+📖 详细配置：[用 Cursor + Opus 自动发送邮件](https://github.com/hanjianhua44/ai-tools-experience/blob/main/docs/send-email-with-opus.md)
 
 ### 🐙 集成三：GitHub
 
