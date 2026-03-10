@@ -161,6 +161,63 @@ Cursor 不仅是代码编辑器 —— 通过 **Rules（规则配置）** 和 **
 
 ---
 
+## 🧩 Rules 与 Skills：让 AI 不再重复探索
+
+每台机器环境不同（PATH、网络策略、Shell 语法），AI 每次执行都要重新摸索，一个 `git push` 可能反复报错 4-5 次才成功。**把确定性的知识固化下来，就能跳过所有试错。**
+
+Cursor 提供两层机制：
+
+| 机制 | 作用 | 类比 |
+|:-----|:-----|:-----|
+| 📜 **Rules**（`.cursor/rules/*.mdc`） | 身份、约束、触发路由 —— "我是谁，遇到什么事找谁" | 员工手册 |
+| 🧩 **Skills**（`~/.cursor/skills/*/SKILL.md`） | 具体操作规程 —— "这件事一步步怎么做" | SOP |
+
+**Rules** 是 `.mdc` 文件，每次对话自动加载。它让 AI 知道"我在哪、我是谁、有什么限制"，并在遇到特定任务时路由到对应的 Skill。比如你说"帮我 push 到 GitHub"，AI 不需要再问用户名、走 HTTPS 还是 SSH —— Rules 里有身份信息，并指向 git-operations Skill 获取具体操作步骤。
+
+**Skills** 是按需加载的操作手册，只有在相关任务触发时才读取，不占用每次对话的上下文。
+
+### 📜 当前 Rules
+
+| Rule | 加载方式 | 职责 |
+|:-----|:---------|:-----|
+| **user-context.mdc** | 始终加载 | 用户身份（GitHub / 邮箱）、网络约束（SSH only）、Skill 路由表、项目约定 |
+| **feishu-bridge.mdc** | 始终加载 | 识别 `[飞书]` 前缀消息、授予自动执行权限、路由到 feishu-bridge Skill |
+
+> Rules 只回答"是什么"和"找谁"，不包含具体操作细节。
+
+### 🧩 当前 Skills
+
+| Skill | 触发场景 | 固化的知识 |
+|:------|:---------|:-----------|
+| 🐙 **git-operations** | Git 操作 | PATH 设置、PowerShell 语法陷阱、SSH 网络配置、commit 命令格式 |
+| 📧 **send-email** | 发送邮件 | SMTP 完整配置、Python 脚本模板、附件编码、邮件风格 |
+| 🌉 **feishu-bridge** | 飞书消息处理 | 完整工作流：读取配置 → 按模式处理 → 发送回复 → 更新状态 |
+| 💬 **feishu-mcp** | 飞书 MCP 调用 | MCP 调用格式、消息序列化规则、全部 19 个可用工具清单 |
+
+### 🔄 协作流程
+
+以收到一条飞书消息为例：
+
+```
+📱 [飞书] 帮我发封邮件给工作邮箱
+    ↓
+📜 feishu-bridge.mdc (Rule)     ← 识别 [飞书] 前缀，授权自动执行
+    ↓
+🌉 feishu-bridge (Skill)        ← 读取 state.json，确定模式和 chat_id
+    ↓
+📜 user-context.mdc (Rule)      ← 获取邮箱身份，路由到 send-email Skill
+    ↓
+📧 send-email (Skill)           ← 生成 Python 脚本，执行发送
+    ↓
+💬 feishu-mcp (Skill)           ← 通过 MCP 将结果回复到飞书
+```
+
+**效果：** 同样是 `git push`，无 Skills 需要 3-5 分钟反复试错，有 Skills 后 10 秒一次到位。
+
+> 💡 **对于确定性的操作，不要让 AI 每次都去探索。踩过的坑总结成 Skills，pipeline 跑得更快更稳。**
+
+---
+
 ## 🚀 正在构建的项目
 
 以下是基于 Cursor 正在推进的两个实际项目，展示 AI 工具在持续性工程任务中的应用。
